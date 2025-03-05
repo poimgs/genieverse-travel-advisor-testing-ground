@@ -63,6 +63,18 @@ if check_password():
         st.title("Travel Advisor Chat")
         st.markdown("Ask me about places to visit in Singapore! I can provide personalized recommendations based on your interests.")
         
+        # Display OpenAI Usage Metrics
+        st.subheader("API Usage Metrics")
+        st.write("*Pricing estimates are based on the `gpt-4o-mini` model.")
+
+        metrics_col1, metrics_col2 = st.columns(2)
+        with metrics_col1:
+            st.metric("Total Tokens", f"{st.session_state.chat_manager.token_usage['total_tokens']:,}")
+            st.metric("Prompt Tokens", f"{st.session_state.chat_manager.token_usage['total_prompt_tokens']:,}")
+        with metrics_col2:
+            st.metric("Completion Tokens", f"{st.session_state.chat_manager.token_usage['total_completion_tokens']:,}")
+            st.metric("Est. Cost ($)", f"{st.session_state.chat_manager.token_usage['total_cost']:.4f}")
+        
         st.subheader("Example Questions")
         st.markdown("""
         - What are some good places to visit in Bedok?

@@ -13,6 +13,12 @@ class ChatManager:
     def __init__(self):
         """Initialize the ChatManager with an empty conversation history."""
         self.conversation_history = []
+        self.token_usage = {
+            'total_prompt_tokens': 0,
+            'total_completion_tokens': 0,
+            'total_tokens': 0,
+            'total_cost': 0.0
+        }
     
     def add_message(self, role: str, content: str) -> None:
         """
@@ -44,7 +50,7 @@ PRICE: {location['Price Range']}
 AUDIENCE: {location['Audience / Suitability']}
 HOURS: {location['Operating Hours']}
 ATTRIBUTES: {location['Additional Attributes']}
-DETAILS: {location['content'][:1000]}...
+DETAILS: {location['content']}
 """
     
     def generate_system_prompt(self, locations: List[Dict[str, Any]]) -> str:
@@ -128,9 +134,11 @@ Use these principles to create a comfortable, interactive travel advisory experi
         messages = [{"role": "system", "content": system_prompt}]
         
         # Add the last few messages from the conversation history (to keep context manageable)
-        # TODO: Have a proper function to manage context later
-        max_history = 5  # Adjust as needed
-        for message in self.conversation_history[-max_history:]:
+        # max_history = 5  # Adjust as needed
+        # for message in self.conversation_history[-max_history:]:
+        #     messages.append(message)
+
+        for message in self.conversation_history:
             messages.append(message)
         
         # Call the OpenAI API
@@ -144,6 +152,16 @@ Use these principles to create a comfortable, interactive travel advisory experi
             
             # Extract the response content
             response_content = response.choices[0].message.content
+            
+            # Track token usage
+            usage = response.usage
+            self.token_usage['total_prompt_tokens'] += usage.prompt_tokens
+            self.token_usage['total_completion_tokens'] += usage.completion_tokens
+            self.token_usage['total_tokens'] += usage.total_tokens
+            # Approximate cost calculation (adjust rates as needed)
+            prompt_cost = usage.prompt_tokens * 0.00000015  # $0.150 / 1M tokens
+            completion_cost = usage.completion_tokens * 0.0000006  # $0.600 / 1M tokens
+            self.token_usage['total_cost'] += prompt_cost + completion_cost
             
             # Add the assistant's response to the conversation history
             self.add_message("assistant", response_content)
