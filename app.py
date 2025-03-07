@@ -63,6 +63,35 @@ if check_password():
         st.title("Travel Advisor Chat")
         st.markdown("Ask me about places to visit in Singapore! I can provide personalized recommendations based on your interests.")
         
+        # System Prompt Editor
+        with st.expander("✏️ Edit System Prompt", expanded=False):
+            st.markdown("**Customize the AI's behavior by editing the system prompt below:**")
+            st.markdown("*Note: The location information section will be automatically preserved.*")
+            
+            # Get the current editable system prompt
+            current_prompt = st.session_state.chat_manager.get_editable_system_prompt()
+            
+            # Create a text area for editing the system prompt
+            new_prompt = st.text_area(
+                "System Prompt",
+                value=current_prompt,
+                height=300
+            )
+            
+            # Save button
+            if st.button("Save Changes"):
+                st.session_state.chat_manager.set_editable_system_prompt(new_prompt)
+                st.success("System prompt updated successfully!")
+                
+            # Reset button
+            if st.button("Reset to Default"):
+                # Create a temporary ChatManager to get the default prompt
+                temp_manager = ChatManager()
+                default_prompt = temp_manager.get_editable_system_prompt()
+                st.session_state.chat_manager.set_editable_system_prompt(default_prompt)
+                st.success("System prompt reset to default!")
+                st.rerun()  # Rerun to update the text area
+        
         # Display OpenAI Usage Metrics
         st.subheader("API Usage Metrics")
         st.write("*Pricing estimates are based on the `gpt-4o-mini` model.")
